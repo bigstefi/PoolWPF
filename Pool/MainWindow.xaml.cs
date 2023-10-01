@@ -161,8 +161,8 @@ namespace Pool
 
         private bool AddCircle(Path circle)
         {
-            // ToDo: Check if gradient is the same, if yes, update the start and end points (max and min),
-            // drop the original element, add the new one and return true (otherwise false)
+            // ToDo: Check if origin and radius are the same, if yes, ignore the changes,
+            // otherwise add a new circle and return true (otherwise false)
             if (_circles.Contains(circle))
             {
                 return false;
