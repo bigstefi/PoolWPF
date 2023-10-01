@@ -22,9 +22,13 @@ namespace Pool
     /// </summary>
     public partial class MainWindow : Window
     {
+        Color _canvasBackgroundColor = (Color)ColorConverter.ConvertFromString("#336699");
         private Pen _pen;// = null;
         private Point _lineStart = new Point(0, 0);
         private Point _lineEnd = new Point(100, 100);
+
+        private List<Path> _lines = new List<Path>();
+        private List<Path> _circles = new List<Path>();
 
         public MainWindow()
         {
@@ -40,6 +44,8 @@ namespace Pool
             this.MouseUp += MainWindow_OnMouseUp;
             //_canvas.ActualHeight = 300;
             //_canvas.ActualWidth = 300;
+
+            _canvas.Background = new SolidColorBrush(_canvasBackgroundColor);
         }
 
         private void MainWindow_OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -61,14 +67,18 @@ namespace Pool
         {
             _lineEnd = e.MouseDevice.GetPosition(this);
 
-            _canvas.Children.Clear();
-            var bgColor = (Color)ColorConverter.ConvertFromString("#003366");
-            _canvas.Background = new SolidColorBrush(bgColor);
+            DrawLine(_lineStart, _lineEnd);
 
-            Point p = e.MouseDevice.GetPosition(this.InputHitTest(new Point(0, 0)));
-            EllipseGeometry eg= new EllipseGeometry();
+            int radius = 25;
+            DrawCircle(new Point((_lineStart.X + _lineEnd.X)/2, (_lineStart.Y + _lineEnd.Y) / 2), radius);
+        }
 
-            var lineGeom = new LineGeometry { StartPoint = _lineStart, EndPoint = _lineEnd };
+        private void DrawLine(Point start, Point end)
+        {
+            //Point p = e.MouseDevice.GetPosition(this.InputHitTest(new Point(0, 0)));
+            //EllipseGeometry eg = new EllipseGeometry();
+
+            var lineGeom = new LineGeometry { StartPoint = start, EndPoint = end };
 
             //_lineGeometry = lineGeom;
 
@@ -86,83 +96,81 @@ namespace Pool
                 Data = lineGeom
             };
 
-            // add this line to the canvas
-            _canvas.Children.Add(linePath);
+            bool contentUpdated = AddLine(linePath);
+            if(contentUpdated)
+            {
+                UpdateCanvasElements();
+            }
 
-            _canvas.InvalidateVisual();
+            //_canvas.InvalidateVisual();
         }
 
-        //protected override void OnMouseMove(MouseEventArgs e)
-        //{
-        //    _canvas.Children.Clear();
-        //    var bgColor = (Color)ColorConverter.ConvertFromString("#003366");
-        //    _canvas.Background = new SolidColorBrush(bgColor);
+        private void DrawCircle(Point cengter, double radius)
+        {
+            EllipseGeometry circleGeometry = new EllipseGeometry(cengter, radius, radius);
 
-        //    Point p = e.MouseDevice.GetPosition(this.InputHitTest(new Point(0, 0)));
+            Random rand = new Random();
 
-        //    var lineGeom = new LineGeometry { StartPoint = _lineStart, EndPoint = _lineEnd };
+            var circleColor = Color.FromArgb((byte)rand.Next(255),
+                (byte)rand.Next(255),
+                (byte)rand.Next(255),
+                (byte)rand.Next(255));
 
-        //    Random rand = new Random();
+            Path circlePath = new Path
+            {
+                Stroke = new SolidColorBrush(circleColor),
+                StrokeThickness = rand.Next(1, 10),
+                Data = circleGeometry
+            };
 
-        //    var lineColor = Color.FromArgb((byte)rand.Next(255),
-        //        (byte)rand.Next(255),
-        //        (byte)rand.Next(255),
-        //        (byte)rand.Next(255));
+            bool contentUpdated = AddCircle(circlePath);
+            if (contentUpdated)
+            {
+                UpdateCanvasElements();
+            }
 
-        //    Path linePath = new Path
-        //    {
-        //        Stroke = new SolidColorBrush(lineColor),
-        //        StrokeThickness = rand.Next(1, 10),
-        //        Data = lineGeom
-        //    };
+            //_canvas.InvalidateVisual();
+        }
 
-        //    // add this line to the canvas
-        //    _canvas.Children.Add(linePath);
+        private void UpdateCanvasElements()
+        {
+            _canvas.Children.Clear();
+            foreach (Path line in _lines)
+            {
+                _canvas.Children.Add(line);
+            }
+            foreach (Path circle in _circles)
+            {
+                _canvas.Children.Add(circle);
+            }
+        }
 
-        //    Ellipse myEllipse = new Ellipse();
-        //    SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-        //    mySolidColorBrush.Color = Colors.Black;
-        //    myEllipse.Fill = mySolidColorBrush;
-        //    myEllipse.StrokeThickness = 2;
-        //    myEllipse.Stroke = Brushes.Black;
+        private bool AddLine(Path line)
+        {
+            // ToDo: Check if gradient is the same, if yes, update the start and end points (max and min),
+            // drop the original element, add the new one and return true (otherwise false)
+            if(_lines.Contains(line))
+            {
+                return false;
+            }
 
-        //    // Set the width and height of the Ellipse.
-        //    myEllipse.Width = 100;
-        //    myEllipse.Height = 100;
+            _lines.Add(line);
 
-        //    // How to set center of ellipse???
-        //    //this.AddChild(myEllipse);
+            return true;
+        }
 
-        //    LineGeometry myLineGeometry = new LineGeometry();
+        private bool AddCircle(Path circle)
+        {
+            // ToDo: Check if gradient is the same, if yes, update the start and end points (max and min),
+            // drop the original element, add the new one and return true (otherwise false)
+            if (_circles.Contains(circle))
+            {
+                return false;
+            }
 
-        //    myLineGeometry.StartPoint = _lineStart;
-        //    myLineGeometry.EndPoint = _lineEnd;
+            _circles.Add(circle);
 
-        //    Line line = new Line();
-        //    line.X1= _lineStart.X;
-        //    line.Y1 = _lineStart.Y;
-
-        //    line.X2 = _lineEnd.X;
-        //    line.Y2 = _lineEnd.Y;
-        //    line.Stroke = SystemColors.WindowFrameBrush;
-        //    line.StrokeThickness = 2;
-
-        //    Path myPath = new Path();
-        //    myPath.Stroke = Brushes.Black;
-        //    myPath.StrokeThickness = 1;
-        //    myPath.Data = myLineGeometry;
-        //    myPath.Fill = mySolidColorBrush; 
-        //    myPath.StrokeThickness = 1;
-
-        //    this.InvalidateVisual();
-
-        //    _canvas.Children.Add(myEllipse);
-        //    _canvas.Children.Add(line);
-        //    _canvas.Children.Add(myPath);
-
-        //    _canvas.InvalidateVisual();
-
-        //    e.Handled = true;
-        //}
+            return true;
+        }
     }
 }
