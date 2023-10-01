@@ -22,13 +22,18 @@ namespace Pool
     /// </summary>
     public partial class MainWindow : Window
     {
-        Color _canvasBackgroundColor = (Color)ColorConverter.ConvertFromString("#336699");
+        //Color _canvasBackgroundColor = (Color)ColorConverter.ConvertFromString("#336699");
+        Color _canvasBackgroundColor = (Color)ColorConverter.ConvertFromString("#bbddff");
         private Pen _pen;// = null;
         private Point _lineStart = new Point(0, 0);
         private Point _lineEnd = new Point(100, 100);
 
         private List<Path> _lines = new List<Path>();
         private List<Path> _circles = new List<Path>();
+
+        System.Windows.Threading.DispatcherTimer _timer = new System.Windows.Threading.DispatcherTimer();
+        string _pathToData = System.IO.Path.Combine(Environment.CurrentDirectory, "TestData", "Data1.txt");
+        private int _dataIdx = 0;
 
         public MainWindow()
         {
@@ -46,6 +51,24 @@ namespace Pool
             //_canvas.ActualWidth = 300;
 
             _canvas.Background = new SolidColorBrush(_canvasBackgroundColor);
+
+            _timer.Interval = new TimeSpan(0, 0, 0, 0, 20);
+            _timer.Tick += OnTimer;
+
+            _timer.Start();
+        }
+
+        private void OnTimer(object? sender, EventArgs e)
+        {
+            string[] lines = System.IO.File.ReadAllLines(_pathToData);
+            if(_dataIdx >= lines.Length)
+            {
+                return;
+            }
+
+            ParseDataLine(lines[_dataIdx]);
+
+            ++_dataIdx;
         }
 
         private void MainWindow_OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -105,9 +128,9 @@ namespace Pool
             //_canvas.InvalidateVisual();
         }
 
-        private void DrawCircle(Point cengter, double radius)
+        private void DrawCircle(Point center, double radius)
         {
-            EllipseGeometry circleGeometry = new EllipseGeometry(cengter, radius, radius);
+            EllipseGeometry circleGeometry = new EllipseGeometry(center, radius, radius);
 
             Random rand = new Random();
 
@@ -171,6 +194,20 @@ namespace Pool
             _circles.Add(circle);
 
             return true;
+        }
+
+        private void ParseDataLine(string data)
+        {
+            Random rnd = new Random();
+
+            if(data.StartsWith("Line"))
+            {
+                DrawLine(new Point(rnd.Next(0, 400), rnd.Next(0, 400)), new Point(rnd.Next(0, 400), rnd.Next(0, 400)));
+            }
+            else if (data.StartsWith("Circle"))
+            {
+                DrawCircle(new Point(rnd.Next(0, 400), rnd.Next(0, 400)), rnd.Next(0, 50));
+            }
         }
     }
 }
