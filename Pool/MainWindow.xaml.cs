@@ -39,6 +39,7 @@ namespace Pool
         {
             InitializeComponent();
             //this.OnMouseMove += OnMouseMove1;
+            this.SizeChanged += OnSizeChanged;
 
             _pen = new Pen();
 
@@ -52,10 +53,16 @@ namespace Pool
 
             _canvas.Background = new SolidColorBrush(_canvasBackgroundColor);
 
-            _timer.Interval = new TimeSpan(0, 0, 0, 0, 20);
+            _timer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             _timer.Tick += OnTimer;
 
             _timer.Start();
+        }
+
+        void OnSizeChanged(object sender, SizeChangedEventArgs args)
+        {
+            _canvas.Width = args.NewSize.Width;
+            _canvas.Height = args.NewSize.Height;
         }
 
         private void OnTimer(object? sender, EventArgs e)
@@ -202,11 +209,11 @@ namespace Pool
 
             if(data.StartsWith("Line"))
             {
-                DrawLine(new Point(rnd.Next(0, 400), rnd.Next(0, 400)), new Point(rnd.Next(0, 400), rnd.Next(0, 400)));
+                DrawLine(new Point(rnd.NextDouble() * _canvas.Width, rnd.NextDouble() * _canvas.Height), new Point(rnd.NextDouble() * _canvas.Width, rnd.NextDouble() * _canvas.Height));
             }
             else if (data.StartsWith("Circle"))
             {
-                DrawCircle(new Point(rnd.Next(0, 400), rnd.Next(0, 400)), rnd.Next(0, 50));
+                DrawCircle(new Point(rnd.NextDouble() * _canvas.Width, rnd.NextDouble() * _canvas.Height), rnd.Next(0, (int)(_canvas.Height/10)));
             }
         }
     }
